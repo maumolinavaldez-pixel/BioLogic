@@ -1,6 +1,6 @@
 # BioLogic Library
 
-Librería Arduino para controlar la placa **BioLogic**, diseñada por Mauricio Molina Valdez (@teoriademau).
+Librería Arduino  para controlar la placa **BioLogic**, diseñada por Mauricio Molina Valdez (@teoriademau).
 
 ## Instalación
 
