@@ -1,6 +1,6 @@
 # BioLogic Library
 
-Librería Arduino para controlar la placa **BioLogic** (STM32 como esclavo I2C) desde ESP32-C3.
+Librería Arduino para controlar la placa **BioLogic** , Diseñada por Mauricio Molina Valdez (@teoriademau).
 
 ## Instalación
 
