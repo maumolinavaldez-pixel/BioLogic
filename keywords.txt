@@ -1,0 +1,55 @@
+﻿#######################################
+# BioLogic Library - Keywords
+# Diseñada por @teoriademau para la placa BioLogic
+#######################################
+
+# Clase principal (KEYWORD1)
+BioLogic	KEYWORD1
+
+# Métodos de inicialización (KEYWORD2)
+begin	KEYWORD2
+
+# Métodos Arduino compatibles (KEYWORD2)
+pinMode	KEYWORD2
+digitalWrite	KEYWORD2
+digitalRead	KEYWORD2
+analogWrite	KEYWORD2
+analogRead	KEYWORD2
+
+# Métodos específicos BioLogic (KEYWORD2)
+relayOn	KEYWORD2
+relayOff	KEYWORD2
+pwmPercent	KEYWORD2
+readVoltage	KEYWORD2
+isConnected	KEYWORD2
+setAddress	KEYWORD2
+getAddress	KEYWORD2
+
+# Pines virtuales BioLogic (LITERAL1)
+r1	LITERAL1
+r2	LITERAL1
+r3	LITERAL1
+r4	LITERAL1
+q1	LITERAL1
+q2	LITERAL1
+q3	LITERAL1
+q4	LITERAL1
+in1	LITERAL1
+in2	LITERAL1
+in3	LITERAL1
+in4	LITERAL1
+in5	LITERAL1
+in6	LITERAL1
+in7	LITERAL1
+in8	LITERAL1
+
+# Modos de pines (LITERAL1)
+INPUT	LITERAL1
+OUTPUT	LITERAL1
+INPUT_PULLUP	LITERAL1
+INPUT_ANALOG	LITERAL1
+PWM_MODE	LITERAL1
+
+# Valores (LITERAL1)
+LOW	LITERAL1
+HIGH	LITERAL1
