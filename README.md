@@ -13,30 +13,30 @@ La placa BioLogic ofrece 16 pines virtuales organizados en 3 grupos:
 
 ### 🔌 **Salidas Digitales (Relés)**
 ```
-Pin 0: r1 - Salida digital 1
-Pin 1: r2 - Salida digital 2  
-Pin 2: r3 - Salida digital 3
-Pin 3: r4 - Salida digital 4
+Pin r1 - Salida Rele 1
+Pin r2 - Salida Rele 2  
+Pin r3 - Salida Rele 3
+Pin r4 - Salida Rele 4
 ```
 
 ### 🎛️ **Salidas PWM (Control de intensidad)**
 ```
-Pin 4: q1 - Salida PWM 1 (0-100%)
-Pin 5: q2 - Salida PWM 2 (0-100%)
-Pin 6: q3 - Salida PWM 3 (0-100%)
-Pin 7: q4 - Salida PWM 4 (0-100%)
+Pin q1 - Salida PWM 1 (0-100%)
+Pin q2 - Salida PWM 2 (0-100%)
+Pin q3 - Salida PWM 3 (0-100%)
+Pin q4 - Salida PWM 4 (0-100%)
 ```
 
 ### 🔍 **Entradas Digitales/Analógicas**
 ```
-Pin 8:  in1 - Entrada 1 (digital/analógica)
-Pin 9:  in2 - Entrada 2 (digital/analógica)
-Pin 10: in3 - Entrada 3 (digital/analógica)
-Pin 11: in4 - Entrada 4 (digital/analógica)
-Pin 12: in5 - Entrada 5 (digital/analógica)
-Pin 13: in6 - Entrada 6 (digital/analógica)
-Pin 14: in7 - Entrada 7 (digital/analógica)
-Pin 15: in8 - Entrada 8 (digital/analógica)
+Pin  in1 - Entrada 1 (digital/analógica)
+Pin  in2 - Entrada 2 (digital/analógica)
+Pin  in3 - Entrada 3 (digital/analógica)
+Pin  in4 - Entrada 4 (digital/analógica)
+Pin  in5 - Entrada 5 (digital/analógica)
+Pin  in6 - Entrada 6 (digital/analógica)
+Pin  in7 - Entrada 7 (digital/analógica)
+Pin  in8 - Entrada 8 (digital/analógica)
 ```
 
 ## Uso Básico
