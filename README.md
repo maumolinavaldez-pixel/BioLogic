@@ -1,11 +1,43 @@
 # BioLogic Library
 
-Librería Arduino para controlar la placa **BioLogic** , Diseñada por Mauricio Molina Valdez (@teoriademau).
+Librería Arduino para controlar la placa **BioLogic**, diseñada por Mauricio Molina Valdez (@teoriademau).
 
 ## Instalación
 
 Descarga el archivo `BioLogic.zip` e instálalo en Arduino IDE:
 `Sketch → Include Library → Add .ZIP Library...`
+
+## Entradas y Salidas por Software
+
+La placa BioLogic ofrece 16 pines virtuales organizados en 3 grupos:
+
+### 🔌 **Salidas Digitales (Relés)**
+```
+Pin 0: r1 - Salida digital 1
+Pin 1: r2 - Salida digital 2  
+Pin 2: r3 - Salida digital 3
+Pin 3: r4 - Salida digital 4
+```
+
+### 🎛️ **Salidas PWM (Control de intensidad)**
+```
+Pin 4: q1 - Salida PWM 1 (0-100%)
+Pin 5: q2 - Salida PWM 2 (0-100%)
+Pin 6: q3 - Salida PWM 3 (0-100%)
+Pin 7: q4 - Salida PWM 4 (0-100%)
+```
+
+### 🔍 **Entradas Digitales/Analógicas**
+```
+Pin 8:  in1 - Entrada 1 (digital/analógica)
+Pin 9:  in2 - Entrada 2 (digital/analógica)
+Pin 10: in3 - Entrada 3 (digital/analógica)
+Pin 11: in4 - Entrada 4 (digital/analógica)
+Pin 12: in5 - Entrada 5 (digital/analógica)
+Pin 13: in6 - Entrada 6 (digital/analógica)
+Pin 14: in7 - Entrada 7 (digital/analógica)
+Pin 15: in8 - Entrada 8 (digital/analógica)
+```
 
 ## Uso Básico
 
@@ -53,27 +85,36 @@ void loop() {
 
 ## Funciones Disponibles
 
+### **Inicialización**
 ```cpp
-// Inicialización
-board.begin(SDA_PIN, SCL_PIN);
-board.isConnected();
+board.begin(SDA_PIN, SCL_PIN);  // Inicializar comunicación
+board.isConnected();             // Verificar conexión (retorna bool)
+```
 
-// Control básico (Arduino compatible)
-board.pinMode(pin, mode);
-board.digitalWrite(pin, value);
-board.digitalRead(pin);
-board.analogWrite(pin, value);
-board.analogRead(pin);
+### **Control Básico (Arduino compatible)**
+```cpp
+board.pinMode(pin, mode);        // Configurar modo del pin
+board.digitalWrite(pin, value);  // Escribir digital (HIGH/LOW)
+board.digitalRead(pin);          // Leer digital (retorna HIGH/LOW)
+board.analogWrite(pin, value);   // Escribir PWM (0-255)
+board.analogRead(pin);           // Leer ADC (0-4095)
+```
 
-// Funciones específicas
-board.relayOn(relayNum);        // 0-3
-board.relayOff(relayNum);
-board.pwmPercent(pwmNum, %);    // 4-7, 0-100%
-board.readVoltage(inputNum);    // 8-15, retorna 0-3.3V
+### **Funciones Específicas BioLogic**
+```cpp
+board.relayOn(relayNum);        // Encender relé (0-3 para r1-r4)
+board.relayOff(relayNum);       // Apagar relé
+board.pwmPercent(pwmNum, %);    // Control PWM por % (4-7 para q1-q4)
+board.readVoltage(inputNum);    // Leer voltaje (8-15 para in1-in8)
+```
 
-// Utilidades
-board.setAddress(newAddress);
-board.setTimeout(ms);
+### **Utilidades y Diagnóstico**
+```cpp
+board.setAddress(newAddress);   // Cambiar dirección I2C
+board.setTimeout(ms);           // Configurar timeout comunicación
+board.getVersion();             // Obtener versión librería
+board.getAuthor();              // Obtener autor (@teoriademau)
+board.testConnection();         // Test completo de comunicación
 ```
 
 ## Modos de Pines
@@ -84,6 +125,33 @@ OUTPUT          // Salida digital
 INPUT_PULLUP    // Entrada con pull-up interna
 INPUT_ANALOG    // Entrada analógica (ADC)
 PWM_MODE        // Salida PWM
+```
+
+## Rangos y Valores
+
+### **Para digitalWrite():**
+```cpp
+HIGH    // 1, true, 0xFF
+LOW     // 0, false, 0x00
+```
+
+### **Para analogWrite():**
+```cpp
+0   → 0% PWM
+127 → 50% PWM
+255 → 100% PWM
+```
+
+### **Para analogRead():**
+```cpp
+0     → 0V
+2048  → 1.65V
+4095  → 3.3V
+```
+
+### **Para readVoltage():**
+```cpp
+0.00V a 3.30V  // Precisión: 0.8mV (3.3V / 4095)
 ```
 
 ## Ejemplos Incluidos
@@ -100,11 +168,12 @@ ESP32-C3  →  BioLogic
 GPIO8     →  SDA
 GPIO9     →  SCL
 GND       →  GND
+(PUEDE SER CONECTADO CON CUALQUIER MICROCONTROLADOR CON LA DIRECCION I2C: 0X40
 ```
 
 ---
 
-Diseñado por **@teoriademau** para programar la placa **BioLogic**.
-
-Para más información: [https://github.com/teoriademau/BioLogic](https://github.com/maumolinavaldez-pixel/BioLogic/)
-                       https://t.me/teoriademau
+**Diseñado por:** Mauricio Molina Valdez (@teoriademau)  
+**Placa:** BioLogic (STM32 Bluepill como esclavo I2C)  
+**Repositorio:** [https://github.com/maumolinavaldez-pixel/BioLogic](https://github.com/maumolinavaldez-pixel/BioLogic/)  
+**Contacto:** https://t.me/teoriademau
