@@ -46,7 +46,7 @@ BioLogic::BioLogic(uint8_t address, uint8_t sdaPin, uint8_t sclPin) {
 void BioLogic::begin() {
     // Inicializar comunicación I2C
     Wire.begin(_sdaPin, _sclPin);
-    Wire.setClock(100000); // Frecuencia estándar 100kHz
+    Wire.setClock(400000); // Frecuencia estándar 100kHz
     
     _initialized = true;
     
@@ -70,7 +70,7 @@ void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
     
     // Inicializar comunicación I2C con pines personalizados
     Wire.begin(_sdaPin, _sclPin);
-    Wire.setClock(100000);
+    Wire.setClock(400000);
     
     _initialized = true;
     delay(100);
@@ -482,4 +482,5 @@ void BioLogic::resetBoard() {
     #endif
     
     delay(1000); // Esperar a que la placa se reinicie
+
 }
