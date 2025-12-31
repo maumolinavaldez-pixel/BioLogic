@@ -17,16 +17,16 @@
 
 BioLogic::BioLogic() {
     _address = BIOLOGIC_DEFAULT_ADDRESS;
-    _sdaPin = 21;        // Pin SDA por defecto para ESP32
-    _sclPin = 22;        // Pin SCL por defecto para ESP32
+    _sdaPin = 10;        // Pin SDA por defecto para ESP32
+    _sclPin = 3;        // Pin SCL por defecto para ESP32
     _initialized = false;
     _timeout = 100;      // Timeout de 100ms por defecto
 }
 
 BioLogic::BioLogic(uint8_t address) {
     _address = address;
-    _sdaPin = 21;
-    _sclPin = 22;
+    _sdaPin = 10;
+    _sclPin = 3;
     _initialized = false;
     _timeout = 100;
 }
@@ -484,3 +484,4 @@ void BioLogic::resetBoard() {
     delay(1000); // Esperar a que la placa se reinicie
 
 }
+
