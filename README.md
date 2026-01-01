@@ -48,8 +48,7 @@ BioLogic board;
 
 void setup() {
   Serial.begin(115200);
-  board.begin(8, 9);  // SDA=GPIO8, SCL=GPIO9
-  
+  board.begin(10, 3);  // SDA=GPIO10, SCL=GPIO3
   board.pinMode(0, OUTPUT);   // r1 como salida
   board.pinMode(4, PWM_MODE); // q1 como PWM
   board.pinMode(8, INPUT_PULLUP); // in1 con pull-up
@@ -165,8 +164,8 @@ Accede a `File → Examples → BioLogic` para ver:
 
 ```
 ESP32-C3  →  BioLogic
-GPIO8     →  SDA
-GPIO9     →  SCL
+GPIO10    →  SDA
+GPIO3    →  SCL
 GND       →  GND
 (PUEDE SER CONECTADO CON CUALQUIER MICROCONTROLADOR CON LA DIRECCION I2C: 0X40
 ```
