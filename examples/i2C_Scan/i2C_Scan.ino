@@ -12,7 +12,7 @@ void setup() {
   Serial.println("Inicializando bus I2C...");
   
   Wire.begin(sdaPin, sclPin);
-  Wire.setClock(400000); // Frecuencia estándar 100kHz
+  Wire.setClock(400000);
   
   delay(1000);
 }
