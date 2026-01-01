@@ -7,6 +7,7 @@
  */
 
 #include <BioLogic.h>
+#include <Arduino.h>
 
 // Crear objeto de la placa BioLogic
 BioLogic board;
@@ -24,7 +25,8 @@ void setup() {
   
   // Inicializar comunicación I2C con la placa BioLogic
   // Para ESP32-C3: GPIO8=SDA, GPIO9=SCL
-  board.begin(8, 9);
+  board.begin(10, 3);
+  Wire.setClock(400000);
   
   delay(1000); // Esperar inicialización de la placa BioLogic
   
@@ -41,9 +43,6 @@ void setup() {
   } else {
     Serial.println("FALLO!");
     Serial.println("Verifica las conexiones:");
-    Serial.println("  ESP32 GPIO8  -> BioLogic PB7 (SDA)");
-    Serial.println("  ESP32 GPIO9  -> BioLogic PB6 (SCL)");
-    Serial.println("  GND -> GND");
     while(1); // Detener si no hay conexión
   }
   

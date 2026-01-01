@@ -7,6 +7,7 @@
  */
 
 #include <BioLogic.h>
+#include <Arduino.h>
 
 // Crear objeto de la placa BioLogic
 BioLogic board;
@@ -22,14 +23,15 @@ void setup() {
   delay(1000);
   
   Serial.println("==========================================");
-  Serial.println("BIO_LOGIC - EFECTOS PWM");
+  Serial.println("BIoLogic - EFECTOS PWM");
   Serial.println("Diseñado por @teoriademau");
   Serial.println("Placa BioLogic v1.0");
   Serial.println("==========================================");
   Serial.println();
   
   // Inicializar comunicación I2C
-  board.begin(8, 9);
+  board.begin(10, 3);
+  Wire.setClock(400000);
   delay(1000);
   
   // Verificar conexión
