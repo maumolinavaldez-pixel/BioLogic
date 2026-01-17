@@ -1,7 +1,7 @@
 ﻿/*
  * BioLogic.h - Librería para controlar la placa BioLogic
  * Diseñada por @teoriademau para programar la placa BioLogic
- * Versión 1.0.0
+ * Versión 2.0.0
  * 
  */
 
@@ -14,7 +14,7 @@
 // ============================================
 // VERSIÓN Y CRÉDITOS
 // ============================================
-#define BIOLOGIC_VERSION "1.0.0"
+#define BIOLOGIC_VERSION "2.0.0"
 #define BIOLOGIC_AUTHOR "@teoriademau"
 #define BIOLOGIC_DESCRIPTION "Librería para la placa BioLogic"
 
@@ -22,6 +22,16 @@
 // DIRECCIÓN I2C POR DEFECTO DE LA PLACA BIOLOGIC
 // ============================================
 #define BIOLOGIC_DEFAULT_ADDRESS 0x40
+
+// ============================================
+// CONSTANTES DE COMANDOS I2C
+// ============================================
+#define CMD_PIN_MODE      0x01  // Configurar modo del pin
+#define CMD_DIGITAL_WRITE 0x02  // Escribir valor digital
+#define CMD_ANALOG_WRITE  0x03  // Escribir valor PWM
+#define CMD_DIGITAL_READ  0x04  // Leer entrada digital
+#define CMD_ANALOG_READ   0x05  // Leer entrada analógica
+#define CMD_PING          0x06  // Comando de latido/keep-alive (NUEVO)
 
 // ============================================
 // PINES VIRTUALES DE LA PLACA BIOLOGIC
@@ -83,6 +93,12 @@ private:
     bool _initialized;           // Bandera de inicialización
     uint32_t _timeout;           // Timeout para comunicación
     
+    // Variables del sistema de latido
+    uint32_t _lastSuccessfulPing; // Tiempo del último ping exitoso
+    bool _autoPingEnabled;        // Auto-ping habilitado
+    uint32_t _pingInterval;       // Intervalo entre pings
+    uint32_t _lastAutoPing;       // Último auto-ping enviado
+    
     // Métodos privados de comunicación
     void _sendCommand(uint8_t cmd, uint8_t pin, uint8_t value = 0);
     uint8_t _readResponse(uint8_t bytes = 1);
@@ -113,6 +129,28 @@ public:
     void begin(uint8_t sdaPin, uint8_t sclPin);
     
     // ============================================
+    // SISTEMA DE LATIDO (HEARTBEAT) - NUEVO
+    // ============================================
+    
+    // Enviar comando de latido (ping)
+    bool ping();
+    
+    // Enviar ping con múltiples reintentos
+    bool ping(uint8_t retries);
+    
+    // Mantener conexión automáticamente (debe llamarse periódicamente)
+    bool maintainConnection();
+    
+    // Obtener tiempo del último ping exitoso
+    uint32_t getLastPingTime();
+    
+    // Habilitar/deshabilitar auto-ping automático
+    void setAutoPing(bool enable);
+    
+    // Establecer intervalo entre pings automáticos
+    void setPingInterval(uint32_t intervalMs);
+    
+    // ============================================
     // FUNCIONES ARDUINO COMPATIBLES
     // ============================================
     
@@ -139,6 +177,7 @@ public:
     void relayOn(uint8_t relayNum);      // Encender relé (r1-r4)
     void relayOff(uint8_t relayNum);     // Apagar relé
     void relayToggle(uint8_t relayNum);  // Alternar estado del relé
+    void relayTimed(uint8_t relayNum, uint32_t durationMs); // Relé temporizado con mantenimiento
     
     // Control PWM por porcentaje (0-100%)
     void pwmPercent(uint8_t pwmNum, uint8_t percent);
@@ -152,6 +191,9 @@ public:
     
     // Verificar conexión con la placa BioLogic
     bool isConnected();
+    
+    // Verificar conexión con reintentos
+    bool isConnected(uint8_t retries);
     
     // Cambiar dirección I2C (si la placa BioLogic lo soporta)
     void setAddress(uint8_t newAddress);
@@ -174,6 +216,9 @@ public:
     // Test de comunicación básico
     bool testConnection();
     
+    // Ejecutar diagnóstico completo del sistema
+    void diagnose();
+    
     // ============================================
     // FUNCIONES DE CONFIGURACIÓN AVANZADA
     // ============================================
@@ -183,6 +228,13 @@ public:
     
     // Reset remoto de la placa BioLogic (si implementado)
     void resetBoard();
+    
+    // ============================================
+    // FUNCIONES DE MANTENIMIENTO AUTOMÁTICO
+    // ============================================
+    
+    // Realizar mantenimiento automático periódico
+    void autoMaintenance();
 };
 
 #endif // BIOLOGIC_H

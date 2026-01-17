@@ -12,13 +12,21 @@
 #include "BioLogic.h"
 
 // ============================================
+// VARIABLES DE LATIDO (Nuevas - agregar al inicio del archivo)
+// ============================================
+static uint32_t _lastSuccessfulPing = 0;
+static bool _autoPingEnabled = true;
+static uint32_t _pingInterval = 1000; // 1 segundo por defecto
+static uint32_t _lastAutoPing = 0;
+
+// ============================================
 // CONSTRUCTORES
 // ============================================
 
 BioLogic::BioLogic() {
     _address = BIOLOGIC_DEFAULT_ADDRESS;
     _sdaPin = 10;        // Pin SDA por defecto para ESP32
-    _sclPin = 3;        // Pin SCL por defecto para ESP32
+    _sclPin = 3;         // Pin SCL por defecto para ESP32
     _initialized = false;
     _timeout = 100;      // Timeout de 100ms por defecto
 }
@@ -46,22 +54,29 @@ BioLogic::BioLogic(uint8_t address, uint8_t sdaPin, uint8_t sclPin) {
 void BioLogic::begin() {
     // Inicializar comunicación I2C
     Wire.begin(_sdaPin, _sclPin);
-    Wire.setClock(400000); // Frecuencia estándar 100kHz
+    Wire.setClock(400000); // Fast Mode 400kHz
     
     _initialized = true;
     
     // Pequeña pausa para inicialización de la placa BioLogic
     delay(100);
     
-    #ifdef BIOLOGIC_DEBUG
-    Serial.println("BioLogic: Librería inicializada");
-    Serial.print("  Dirección: 0x");
-    Serial.println(_address, HEX);
-    Serial.print("  SDA: GPIO");
-    Serial.print(_sdaPin);
-    Serial.print(", SCL: GPIO");
-    Serial.println(_sclPin);
-    #endif
+    // Realizar primer ping para verificar conexión
+    if (ping()) {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("✓ BioLogic: Librería inicializada y conexión verificada");
+        Serial.print("  Dirección: 0x");
+        Serial.println(_address, HEX);
+        Serial.print("  SDA: GPIO");
+        Serial.print(_sdaPin);
+        Serial.print(", SCL: GPIO");
+        Serial.println(_sclPin);
+        #endif
+    } else {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("⚠ BioLogic: Librería inicializada, pero no se pudo verificar conexión");
+        #endif
+    }
 }
 
 void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
@@ -75,17 +90,150 @@ void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
     _initialized = true;
     delay(100);
     
+    // Realizar primer ping
+    if (ping()) {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("✓ BioLogic: Librería inicializada con pines personalizados");
+        Serial.print("  SDA: GPIO");
+        Serial.print(_sdaPin);
+        Serial.print(", SCL: GPIO");
+        Serial.println(_sclPin);
+        #endif
+    } else {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("⚠ BioLogic: Inicializada con pines personalizados, conexión no verificada");
+        #endif
+    }
+}
+
+// ============================================
+// SISTEMA DE LATIDO (HEARTBEAT) - NUEVO
+// ============================================
+
+bool BioLogic::ping() {
+    return ping(1); // Un solo intento por defecto
+}
+
+bool BioLogic::ping(uint8_t retries) {
+    if (!_initialized) {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("BioLogic ERROR: Librería no inicializada. Llama a begin() primero.");
+        #endif
+        return false;
+    }
+    
+    for (uint8_t attempt = 0; attempt < retries; attempt++) {
+        if (attempt > 0) {
+            #ifdef BIOLOGIC_DEBUG
+            Serial.print("BioLogic: Reintento ping ");
+            Serial.print(attempt + 1);
+            Serial.print("/");
+            Serial.println(retries);
+            #endif
+            delay(50 * attempt); // Backoff exponencial
+        }
+        
+        Wire.beginTransmission(_address);
+        Wire.write(CMD_PING);      // Comando de ping
+        uint8_t error = Wire.endTransmission();
+        
+        if (error != 0) {
+            #ifdef BIOLOGIC_DEBUG
+            Serial.print("BioLogic: Error en transmisión ping (");
+            Serial.print(error);
+            Serial.println(")");
+            #endif
+            continue;
+        }
+        
+        delayMicroseconds(500); // Pequeña pausa para procesamiento
+        
+        Wire.requestFrom(_address, (uint8_t)2);
+        uint32_t startTime = millis();
+        
+        // Esperar respuesta con timeout
+        while (Wire.available() < 2 && (millis() - startTime) < _timeout) {
+            delayMicroseconds(100);
+        }
+        
+        if (Wire.available() >= 2) {
+            uint8_t byte1 = Wire.read();
+            uint8_t byte2 = Wire.read();
+            
+            // Verificar respuesta esperada (0xAA 0x55)
+            if (byte1 == 0xAA && byte2 == 0x55) {
+                _lastSuccessfulPing = millis();
+                #ifdef BIOLOGIC_DEBUG
+                Serial.println("✓ BioLogic: Ping exitoso (respuesta 0xAA 0x55)");
+                #endif
+                return true;
+            } else {
+                #ifdef BIOLOGIC_DEBUG
+                Serial.print("BioLogic: Respuesta inesperada: 0x");
+                Serial.print(byte1, HEX);
+                Serial.print(" 0x");
+                Serial.println(byte2, HEX);
+                #endif
+            }
+        } else {
+            #ifdef BIOLOGIC_DEBUG
+            Serial.println("BioLogic: Timeout en ping");
+            #endif
+        }
+    }
+    
     #ifdef BIOLOGIC_DEBUG
-    Serial.println("BioLogic: Librería inicializada con pines personalizados");
-    Serial.print("  SDA: GPIO");
-    Serial.print(_sdaPin);
-    Serial.print(", SCL: GPIO");
-    Serial.println(_sclPin);
+    Serial.println("✗ BioLogic: Ping falló después de todos los intentos");
+    #endif
+    return false;
+}
+
+bool BioLogic::maintainConnection() {
+    if (!_autoPingEnabled) return true;
+    
+    uint32_t currentTime = millis();
+    
+    // Verificar si es tiempo de enviar otro ping
+    if (currentTime - _lastAutoPing >= _pingInterval) {
+        _lastAutoPing = currentTime;
+        
+        // Si no ha habido comunicación exitosa en 2 intervalos, hacer ping
+        if (currentTime - _lastSuccessfulPing >= (_pingInterval * 2)) {
+            #ifdef BIOLOGIC_DEBUG
+            Serial.println("BioLogic: Manteniendo conexión (auto-ping)");
+            #endif
+            return ping(2); // 2 intentos para auto-ping
+        }
+    }
+    
+    return true;
+}
+
+uint32_t BioLogic::getLastPingTime() {
+    return _lastSuccessfulPing;
+}
+
+void BioLogic::setAutoPing(bool enable) {
+    _autoPingEnabled = enable;
+    
+    #ifdef BIOLOGIC_DEBUG
+    Serial.print("BioLogic: Auto-ping ");
+    Serial.println(enable ? "habilitado" : "deshabilitado");
+    #endif
+}
+
+void BioLogic::setPingInterval(uint32_t intervalMs) {
+    _pingInterval = intervalMs;
+    
+    #ifdef BIOLOGIC_DEBUG
+    Serial.print("BioLogic: Intervalo de ping configurado a ");
+    Serial.print(intervalMs);
+    Serial.println("ms");
     #endif
 }
 
 // ============================================
-// MÉTODOS PRIVADOS DE COMUNICACIÓN
+// MÉTODOS PRIVADOS DE COMUNICACIÓN (Mejorados)
 // ============================================
 
 void BioLogic::_sendCommand(uint8_t cmd, uint8_t pin, uint8_t value) {
@@ -96,10 +244,34 @@ void BioLogic::_sendCommand(uint8_t cmd, uint8_t pin, uint8_t value) {
         return;
     }
     
+    // Actualizar timestamp de última comunicación exitosa
+    _lastSuccessfulPing = millis();
+    
     Wire.beginTransmission(_address);
     Wire.write(cmd);      // Comando (0x01-0x05)
     Wire.write(pin);      // Pin virtual (0-15)
     Wire.write(value);    // Valor
+    Wire.endTransmission();
+    
+    // Pequeña pausa para procesamiento en la placa BioLogic
+    delayMicroseconds(500);
+}
+
+void BioLogic::_sendCommand(uint8_t cmd, uint8_t pin) {
+    if (!_initialized) {
+        #ifdef BIOLOGIC_DEBUG
+        Serial.println("BioLogic ERROR: Librería no inicializada. Llama a begin() primero.");
+        #endif
+        return;
+    }
+    
+    // Actualizar timestamp de última comunicación exitosa
+    _lastSuccessfulPing = millis();
+    
+    Wire.beginTransmission(_address);
+    Wire.write(cmd);      // Comando (0x01-0x05)
+    Wire.write(pin);      // Pin virtual (0-15)
+    Wire.write(0x00);     // Valor dummy
     Wire.endTransmission();
     
     // Pequeña pausa para procesamiento en la placa BioLogic
@@ -147,7 +319,7 @@ uint16_t BioLogic::_readResponse16() {
 }
 
 // ============================================
-// FUNCIONES ARDUINO COMPATIBLES
+// FUNCIONES ARDUINO COMPATIBLES (Mejoradas)
 // ============================================
 
 void BioLogic::pinMode(uint8_t pin, uint8_t mode) {
@@ -271,7 +443,7 @@ uint16_t BioLogic::analogRead(uint8_t pin) {
 }
 
 // ============================================
-// FUNCIONES ESPECÍFICAS DE BIOLOGIC
+// FUNCIONES ESPECÍFICAS DE BIOLOGIC (Mejoradas)
 // ============================================
 
 void BioLogic::relayOn(uint8_t relayNum) {
@@ -316,6 +488,35 @@ void BioLogic::relayToggle(uint8_t relayNum) {
         Serial.print(relayNum + 1);
         Serial.print(" alternado a ");
         Serial.println(!currentState ? "ENCENDIDO" : "APAGADO");
+        #endif
+    }
+}
+
+void BioLogic::relayTimed(uint8_t relayNum, uint32_t durationMs) {
+    if (relayNum <= r4) {
+        relayOn(relayNum);
+        
+        // Enviar pings periódicos mientras el relé está activo
+        uint32_t startTime = millis();
+        while (millis() - startTime < durationMs) {
+            delay(1000); // Esperar 1 segundo
+            
+            // Mantener conexión con ping
+            if (!maintainConnection()) {
+                #ifdef BIOLOGIC_DEBUG
+                Serial.println("⚠ BioLogic: Pérdida de conexión durante operación temporizada");
+                #endif
+            }
+        }
+        
+        relayOff(relayNum);
+        
+        #ifdef BIOLOGIC_DEBUG
+        Serial.print("BioLogic: Relé ");
+        Serial.print(relayNum + 1);
+        Serial.print(" activado por ");
+        Serial.print(durationMs / 1000.0, 1);
+        Serial.println(" segundos");
         #endif
     }
 }
@@ -365,28 +566,20 @@ float BioLogic::readVoltage(uint8_t inputNum) {
 }
 
 // ============================================
-// UTILIDADES Y DIAGNÓSTICO
+// UTILIDADES Y DIAGNÓSTICO (Mejoradas)
 // ============================================
 
 bool BioLogic::isConnected() {
     if (!_initialized) return false;
     
-    Wire.beginTransmission(_address);
-    uint8_t error = Wire.endTransmission();
+    // Usar ping en lugar de solo verificar transmisión
+    return ping(1); // 1 intento rápido
+}
+
+bool BioLogic::isConnected(uint8_t retries) {
+    if (!_initialized) return false;
     
-    bool connected = (error == 0);
-    
-    #ifdef BIOLOGIC_DEBUG
-    if (connected) {
-        Serial.println("BioLogic: Placa conectada correctamente");
-    } else {
-        Serial.print("BioLogic ERROR: No se puede conectar con la placa (error ");
-        Serial.print(error);
-        Serial.println(")");
-    }
-    #endif
-    
-    return connected;
+    return ping(retries);
 }
 
 void BioLogic::setAddress(uint8_t newAddress) {
@@ -425,16 +618,15 @@ uint32_t BioLogic::getTimeout() {
 }
 
 bool BioLogic::testConnection() {
-    if (!isConnected()) {
+    if (!isConnected(2)) {
         #ifdef BIOLOGIC_DEBUG
-        Serial.println("BioLogic TEST: FALLO - Placa no responde");
+        Serial.println("✗ BioLogic TEST: FALLO - Placa no responde a ping");
         #endif
         return false;
     }
     
     // Test básico de escritura/lectura
     uint8_t testPin = in1;
-    uint8_t originalMode = 0; // No podemos leer el modo actual
     
     // Configurar como entrada con pull-up
     pinMode(testPin, INPUT_PULLUP);
@@ -443,10 +635,21 @@ bool BioLogic::testConnection() {
     // Leer estado
     uint8_t state = digitalRead(testPin);
     
+    // Test de escritura en un pin de salida (si es seguro)
+    uint8_t outputPin = r1;
+    uint8_t originalValue = digitalRead(outputPin);
+    
+    digitalWrite(outputPin, HIGH);
+    delay(50);
+    digitalWrite(outputPin, originalValue);
+    
     #ifdef BIOLOGIC_DEBUG
-    Serial.println("BioLogic TEST: Completado");
+    Serial.println("✓ BioLogic TEST: Completado exitosamente");
     Serial.print("  Estado pin de prueba: ");
     Serial.println(state ? "HIGH" : "LOW");
+    Serial.print("  Último ping exitoso: hace ");
+    Serial.print((millis() - _lastSuccessfulPing) / 1000.0, 1);
+    Serial.println(" segundos");
     #endif
     
     return true;
@@ -475,13 +678,114 @@ void BioLogic::setI2CFrequency(uint32_t frequency) {
 
 void BioLogic::resetBoard() {
     // Comando especial para reset (si está implementado en el firmware)
-    _sendCommand(0xFF, 0xFF, 0xFF);
+    Wire.beginTransmission(_address);
+    Wire.write(0xFF);  // Comando de reset
+    Wire.write(0xFF);
+    Wire.write(0xFF);
+    Wire.endTransmission();
     
     #ifdef BIOLOGIC_DEBUG
     Serial.println("BioLogic: Comando de reset enviado a la placa");
     #endif
     
     delay(1000); // Esperar a que la placa se reinicie
-
 }
 
+// ============================================
+// FUNCIÓN DE MANTENIMIENTO AUTOMÁTICO (NUEVA)
+// ============================================
+
+void BioLogic::autoMaintenance() {
+    static uint32_t lastMaintenance = 0;
+    uint32_t currentTime = millis();
+    
+    // Realizar mantenimiento cada 5 segundos
+    if (currentTime - lastMaintenance >= 5000) {
+        lastMaintenance = currentTime;
+        
+        // Verificar conexión
+        if (!isConnected()) {
+            #ifdef BIOLOGIC_DEBUG
+            Serial.println("⚠ BioLogic: Pérdida de conexión detectada, intentando recuperar...");
+            #endif
+            
+            // Intentar reconexión
+            for (uint8_t i = 0; i < 3; i++) {
+                if (ping(2)) {
+                    #ifdef BIOLOGIC_DEBUG
+                    Serial.println("✓ BioLogic: Conexión recuperada");
+                    #endif
+                    break;
+                }
+                delay(100 * (i + 1));
+            }
+        }
+        
+        // Mostrar estadísticas de conexión
+        #ifdef BIOLOGIC_DEBUG
+        Serial.print("BioLogic: Estado conexión - ");
+        Serial.print("Último ping exitoso: hace ");
+        Serial.print((currentTime - _lastSuccessfulPing) / 1000.0, 1);
+        Serial.println(" segundos");
+        #endif
+    }
+}
+
+// ============================================
+// FUNCIONES DE DIAGNÓSTICO EXTENDIDO (NUEVAS)
+// ============================================
+
+void BioLogic::diagnose() {
+    #ifdef BIOLOGIC_DEBUG
+    Serial.println("========================================");
+    Serial.println("BIO_LOGIC - DIAGNÓSTICO COMPLETO");
+    Serial.println("========================================");
+    
+    // 1. Verificar conexión I2C
+    Serial.print("1. Conexión I2C: ");
+    Wire.beginTransmission(_address);
+    uint8_t error = Wire.endTransmission();
+    
+    if (error == 0) {
+        Serial.println("OK");
+    } else {
+        Serial.print("ERROR (código: ");
+        Serial.print(error);
+        Serial.println(")");
+    }
+    
+    // 2. Test de ping
+    Serial.print("2. Test de ping: ");
+    if (ping(2)) {
+        Serial.println("OK (respuesta 0xAA 0x55)");
+    } else {
+        Serial.println("FALLO");
+    }
+    
+    // 3. Tiempo desde último ping exitoso
+    Serial.print("3. Último ping exitoso: hace ");
+    Serial.print((millis() - _lastSuccessfulPing) / 1000.0, 1);
+    Serial.println(" segundos");
+    
+    // 4. Estado auto-ping
+    Serial.print("4. Auto-ping: ");
+    Serial.println(_autoPingEnabled ? "HABILITADO" : "DESHABILITADO");
+    if (_autoPingEnabled) {
+        Serial.print("   Intervalo: ");
+        Serial.print(_pingInterval);
+        Serial.println(" ms");
+    }
+    
+    // 5. Test rápido de lectura
+    Serial.print("5. Test lectura entrada 1 (in1): ");
+    uint16_t analogValue = analogRead(8); // in1 = pin 8
+    Serial.print(analogValue);
+    Serial.print(" (");
+    Serial.print((analogValue * 3.3) / 4095.0, 2);
+    Serial.println("V)");
+    
+    Serial.println("========================================");
+    Serial.println("DIAGNÓSTICO COMPLETADO");
+    Serial.println("========================================");
+    #endif
+}
