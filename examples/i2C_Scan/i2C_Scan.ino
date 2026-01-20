@@ -65,4 +65,4 @@ void escanearI2C() {
 void loop() {
   escanearI2C();
   delay(10000); // Escanea cada 10 segundos
-}*
+}
