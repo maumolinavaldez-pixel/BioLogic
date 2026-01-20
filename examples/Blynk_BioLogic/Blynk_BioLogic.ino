@@ -7,8 +7,15 @@ void setup(){
   Serial.begin(115200);
   delay(1000);
   board.begin(10, 3); //SDA , SCL
-  //Wire.setClock(400000); //Uncomment if doesn´t connect with the board
   delay(100);
+  board.pinMode(r1, OUTPUT);
+  board.pinMode(r2, OUTPUT);
+  board.pinMode(r3, OUTPUT);
+  board.pinMode(r4, OUTPUT);
+  board.pinMode(q1, OUTPUT);
+  board.pinMode(q2, OUTPUT);
+  board.pinMode(q3, OUTPUT);
+  board.pinMode(q4, OUTPUT);
 }
 
 void loop(){
@@ -21,7 +28,7 @@ void loop(){
    board.digitalWrite(q3, HIGH);
    board.digitalWrite(q4, HIGH);
    Serial.println("Pulso1");
-   delay(3000);
+   delay(1000);
    board.digitalWrite(r1, LOW);
    board.digitalWrite(r2, LOW);
    board.digitalWrite(r3, LOW);
@@ -31,5 +38,5 @@ void loop(){
    board.digitalWrite(q3, LOW);
    board.digitalWrite(q4, LOW);
    Serial.println("Pulso2");
-   delay(3000);
+   delay(1000);
 }
