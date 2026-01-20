@@ -257,27 +257,6 @@ void BioLogic::_sendCommand(uint8_t cmd, uint8_t pin, uint8_t value) {
     delayMicroseconds(500);
 }
 
-void BioLogic::_sendCommand(uint8_t cmd, uint8_t pin) {
-    if (!_initialized) {
-        #ifdef BIOLOGIC_DEBUG
-        Serial.println("BioLogic ERROR: Librería no inicializada. Llama a begin() primero.");
-        #endif
-        return;
-    }
-    
-    // Actualizar timestamp de última comunicación exitosa
-    _lastSuccessfulPing = millis();
-    
-    Wire.beginTransmission(_address);
-    Wire.write(cmd);      // Comando (0x01-0x05)
-    Wire.write(pin);      // Pin virtual (0-15)
-    Wire.write(0x00);     // Valor dummy
-    Wire.endTransmission();
-    
-    // Pequeña pausa para procesamiento en la placa BioLogic
-    delayMicroseconds(500);
-}
-
 uint8_t BioLogic::_readResponse(uint8_t bytes) {
     if (!_initialized) return 0;
     
