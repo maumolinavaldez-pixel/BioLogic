@@ -26,8 +26,10 @@ bool estadosRelays[4] = {false};
 uint8_t valoresPWM[4] = {0};
 
 void setup() {
+  board.begin(10, 3);
+  delay(100);
   Serial.begin(115200);
-  delay(1000);
+  delay(100);
   
   Serial.println("==========================================");
   Serial.println("BioLogic - SISTEMA ENTRADAS/SALIDAS");
@@ -35,12 +37,6 @@ void setup() {
   Serial.println("Placa BioLogic v1.0");
   Serial.println("==========================================");
   Serial.println();
-  
-  // Inicializar comunicación I2C 
-  // Direccion: 0x40
-  board.begin(10, 3);
-  Wire.setClock(400000);
-  delay(1000);
   
   // Verificar conexión
   if (!board.isConnected()) {

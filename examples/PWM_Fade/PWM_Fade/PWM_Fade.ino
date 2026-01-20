@@ -19,8 +19,10 @@ float fase3 = 0.0;
 float fase4 = 0.0;
 
 void setup() {
+  board.begin(10, 3);
+  delay(100);
   Serial.begin(115200);
-  delay(1000);
+  delay(100);
   
   Serial.println("==========================================");
   Serial.println("BIoLogic - EFECTOS PWM");
@@ -28,11 +30,7 @@ void setup() {
   Serial.println("Placa BioLogic v1.0");
   Serial.println("==========================================");
   Serial.println();
-  
-  // Inicializar comunicación I2C
-  board.begin(10, 3);
-  Wire.setClock(400000);
-  delay(1000);
+
   
   // Verificar conexión
   if (!board.isConnected()) {

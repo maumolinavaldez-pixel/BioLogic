@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 
-// Configuración de pines (los pines por defecto del ESP32 son 21-SDA, 22-SCL)
+// Configuración de pines
 const int sdaPin = 10;
 const int sclPin = 3;
 

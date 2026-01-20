@@ -4,9 +4,9 @@
 BioLogic board;
 
 void setup(){
+  board.begin(10, 3);
+  delay(100);
   Serial.begin(115200);
-  delay(1000);
-  board.begin(10, 3); //SDA , SCL
   delay(100);
   board.pinMode(r1, OUTPUT);
   board.pinMode(r2, OUTPUT);

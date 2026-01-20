@@ -13,8 +13,10 @@
 BioLogic board;
 
 void setup() {
+  board.begin(10, 3);
+  delay(100);
   Serial.begin(115200);
-  delay(1000);
+  delay(100);
   
   Serial.println("==========================================");
   Serial.println("BIO_LOGIC - CONTROL BÁSICO");
@@ -22,13 +24,6 @@ void setup() {
   Serial.println("Placa BioLogic v1.0");
   Serial.println("==========================================");
   Serial.println();
-  
-  // Inicializar comunicación I2C con la placa BioLogic
-  // Para ESP32-C3: GPIO8=SDA, GPIO9=SCL
-  board.begin(10, 3);
-  Wire.setClock(400000);
-  
-  delay(1000); // Esperar inicialización de la placa BioLogic
   
   // Verificar conexión con la placa BioLogic
   Serial.print("Conectando con la placa BioLogic... ");
