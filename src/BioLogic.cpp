@@ -27,6 +27,7 @@ BioLogic::BioLogic() {
     _address = BIOLOGIC_DEFAULT_ADDRESS;
     _sdaPin = 10;        // Pin SDA por defecto para ESP32
     _sclPin = 3;         // Pin SCL por defecto para ESP32
+    rst = 0;     // Pin por defecto para hacer el Reset por software del STM32
     _initialized = false;
     _timeout = 100;      // Timeout de 100ms por defecto
 }
@@ -55,6 +56,11 @@ void BioLogic::begin() {
     // Inicializar comunicación I2C
     Wire.begin(_sdaPin, _sclPin);
     Wire.setClock(400000); // Fast Mode 400kHz
+    pinMode(rst,OUTPUT);
+    digitalWrite(rst, LOW);
+    delay(10);
+    digitalWrite(rst,HIGH);
+    delay(10);
     
     _initialized = true;
     
@@ -86,6 +92,11 @@ void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
     // Inicializar comunicación I2C con pines personalizados
     Wire.begin(_sdaPin, _sclPin);
     Wire.setClock(400000);
+    pinMode(rst,OUTPUT);
+    digitalWrite(rst, LOW);
+    delay(10);
+    digitalWrite(rst,HIGH);
+    delay(10);
     
     _initialized = true;
     delay(100);
