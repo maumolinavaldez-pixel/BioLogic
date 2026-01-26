@@ -92,6 +92,7 @@ private:
     uint8_t _sclPin;             // Pin SCL
     bool _initialized;           // Bandera de inicialización
     uint32_t _timeout;           // Timeout para comunicación
+    uint8_t rst;                 // Pin Reset STM32 
     
     // Variables del sistema de latido
     uint32_t _lastSuccessfulPing; // Tiempo del último ping exitoso
