@@ -58,9 +58,9 @@ void BioLogic::begin() {
     Wire.setClock(400000); // Fast Mode 400kHz
     pinMode(rst,OUTPUT);
     digitalWrite(rst, LOW);
-    delay(10);
+    delay(100);
     digitalWrite(rst,HIGH);
-    delay(10);
+    delay(100);
     
     _initialized = true;
     
@@ -94,9 +94,9 @@ void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
     Wire.setClock(400000);
     pinMode(rst,OUTPUT);
     digitalWrite(rst, LOW);
-    delay(10);
+    delay(100);
     digitalWrite(rst,HIGH);
-    delay(10);
+    delay(100);
     
     _initialized = true;
     delay(100);
