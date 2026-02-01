@@ -1,7 +1,7 @@
 ﻿/*
  * BioLogic.h - Librería para controlar la placa BioLogic
  * Diseñada por @teoriademau para programar la placa BioLogic
- * Versión 2.0.0
+ * Versión 2.1.0
  * 
  */
 
@@ -11,21 +11,12 @@
 #include "Arduino.h"
 #include "Wire.h"
 
-// ============================================
-// VERSIÓN Y CRÉDITOS
-// ============================================
-#define BIOLOGIC_VERSION "2.0.0"
-#define BIOLOGIC_AUTHOR "@teoriademau"
+#define BIOLOGIC_VERSION "2.1.0"
+#define BIOLOGIC_AUTHOR "Mau Molina Valdez @teoriademau"
 #define BIOLOGIC_DESCRIPTION "Librería para la placa BioLogic"
 
-// ============================================
-// DIRECCIÓN I2C POR DEFECTO DE LA PLACA BIOLOGIC
-// ============================================
 #define BIOLOGIC_DEFAULT_ADDRESS 0x40
 
-// ============================================
-// CONSTANTES DE COMANDOS I2C
-// ============================================
 #define CMD_PIN_MODE      0x01  // Configurar modo del pin
 #define CMD_DIGITAL_WRITE 0x02  // Escribir valor digital
 #define CMD_ANALOG_WRITE  0x03  // Escribir valor PWM
@@ -59,9 +50,6 @@
 #define in7  14  // PA6 en BioLogic (Pin 8) - ADC7
 #define in8  15  // PA7 en BioLogic (Pin 9) - ADC8
 
-// ============================================
-// CONSTANTES ARDUINO COMPATIBLES
-// ============================================
 #ifndef INPUT
   #define INPUT          0x00
 #endif
@@ -82,9 +70,6 @@
 #define INPUT_ANALOG   0x03  // Para lecturas ADC
 #define PWM_MODE       0x04  // Para salidas PWM
 
-// ============================================
-// CLASE PRINCIPAL BIOLOGIC
-// ============================================
 class BioLogic {
 private:
     uint8_t _address;            // Dirección I2C de la placa BioLogic
@@ -94,22 +79,12 @@ private:
     uint32_t _timeout;           // Timeout para comunicación
     uint8_t rst;                 // Pin Reset STM32 
     
-    // Variables del sistema de latido
-    uint32_t _lastSuccessfulPing; // Tiempo del último ping exitoso
-    bool _autoPingEnabled;        // Auto-ping habilitado
-    uint32_t _pingInterval;       // Intervalo entre pings
-    uint32_t _lastAutoPing;       // Último auto-ping enviado
-    
     // Métodos privados de comunicación
     void _sendCommand(uint8_t cmd, uint8_t pin, uint8_t value = 0);
     uint8_t _readResponse(uint8_t bytes = 1);
     uint16_t _readResponse16();
     
-public:
-    // ============================================
-    // CONSTRUCTORES
-    // ============================================
-    
+public:    
     // Constructor por defecto (dirección 0x40)
     BioLogic();
     
@@ -118,42 +93,13 @@ public:
     
     // Constructor completo
     BioLogic(uint8_t address, uint8_t sdaPin, uint8_t sclPin);
-    
-    // ============================================
-    // MÉTODOS DE INICIALIZACIÓN
-    // ============================================
+
     
     // Inicializar con pines por defecto (21, 22 para ESP32)
     void begin();
     
     // Inicializar con pines personalizados
     void begin(uint8_t sdaPin, uint8_t sclPin);
-    
-    // ============================================
-    // SISTEMA DE LATIDO (HEARTBEAT) - NUEVO
-    // ============================================
-    
-    // Enviar comando de latido (ping)
-    bool ping();
-    
-    // Enviar ping con múltiples reintentos
-    bool ping(uint8_t retries);
-    
-    // Mantener conexión automáticamente (debe llamarse periódicamente)
-    bool maintainConnection();
-    
-    // Obtener tiempo del último ping exitoso
-    uint32_t getLastPingTime();
-    
-    // Habilitar/deshabilitar auto-ping automático
-    void setAutoPing(bool enable);
-    
-    // Establecer intervalo entre pings automáticos
-    void setPingInterval(uint32_t intervalMs);
-    
-    // ============================================
-    // FUNCIONES ARDUINO COMPATIBLES
-    // ============================================
     
     // Configurar modo del pin (igual que Arduino)
     void pinMode(uint8_t pin, uint8_t mode);
@@ -170,10 +116,6 @@ public:
     // Leer entrada analógica (0-4095, igual que Arduino para STM32)
     uint16_t analogRead(uint8_t pin);
     
-    // ============================================
-    // FUNCIONES ESPECÍFICAS DE BIOLOGIC
-    // ============================================
-    
     // Control de relés
     void relayOn(uint8_t relayNum);      // Encender relé (r1-r4)
     void relayOff(uint8_t relayNum);     // Apagar relé
@@ -185,16 +127,6 @@ public:
     
     // Leer voltaje en entrada (0-3.3V)
     float readVoltage(uint8_t inputNum);
-    
-    // ============================================
-    // UTILIDADES Y DIAGNÓSTICO
-    // ============================================
-    
-    // Verificar conexión con la placa BioLogic
-    bool isConnected();
-    
-    // Verificar conexión con reintentos
-    bool isConnected(uint8_t retries);
     
     // Cambiar dirección I2C (si la placa BioLogic lo soporta)
     void setAddress(uint8_t newAddress);
@@ -214,28 +146,11 @@ public:
     // Obtener timeout actual
     uint32_t getTimeout();
     
-    // Test de comunicación básico
-    bool testConnection();
-    
-    // Ejecutar diagnóstico completo del sistema
-    void diagnose();
-    
-    // ============================================
-    // FUNCIONES DE CONFIGURACIÓN AVANZADA
-    // ============================================
-    
     // Configurar frecuencia I2C (100kHz, 400kHz, etc.)
     void setI2CFrequency(uint32_t frequency);
     
     // Reset remoto de la placa BioLogic (si implementado)
     void resetBoard();
-    
-    // ============================================
-    // FUNCIONES DE MANTENIMIENTO AUTOMÁTICO
-    // ============================================
-    
-    // Realizar mantenimiento automático periódico
-    void autoMaintenance();
 };
 
 #endif // BIOLOGIC_H
