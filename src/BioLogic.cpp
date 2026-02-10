@@ -14,9 +14,9 @@
 
 BioLogic::BioLogic() {
     _address = BIOLOGIC_DEFAULT_ADDRESS;
-    _sdaPin = 10;        // Pin SDA por defecto para ESP32
-    _sclPin = 3;         // Pin SCL por defecto para ESP32
-    rst = 0;     // Pin por defecto para hacer el Reset por software del STM32
+    _sdaPin = 10;
+    _sclPin = 3;
+    rst = 0; 
     _initialized = false;
     _timeout = 100;      // Timeout de 100ms por defecto
 }
@@ -40,9 +40,9 @@ BioLogic::BioLogic(uint8_t address, uint8_t sdaPin, uint8_t sclPin) {
 void BioLogic::begin() {
     Wire.begin(_sdaPin, _sclPin);
     Wire.setClock(400000); // Fast Mode 400kHz
-    pinMode(rst,OUTPUT);
+    pinMode(rst, OUTPUT);
     digitalWrite(rst, LOW);
-    delay(100);
+    delay(10);
     digitalWrite(rst,HIGH);
     delay(100);
     _initialized = true;
@@ -51,13 +51,11 @@ void BioLogic::begin() {
 void BioLogic::begin(uint8_t sdaPin, uint8_t sclPin) {
     _sdaPin = sdaPin;
     _sclPin = sclPin;
-    
-
     Wire.begin(_sdaPin, _sclPin);
     Wire.setClock(400000);
-    pinMode(rst,OUTPUT);
+    pinMode(rst, OUTPUT);
     digitalWrite(rst, LOW);
-    delay(100);
+    delay(10);
     digitalWrite(rst,HIGH);
     delay(100);
     
@@ -115,66 +113,25 @@ uint16_t BioLogic::_readResponse16() {
     return response;
 }
 
-void BioLogic::pinMode(uint8_t pin, uint8_t mode) {
-    if (pin > 15) {
-        #ifdef BIOLOGIC_DEBUG
-        Serial.print("BioLogic ERROR: Pin ");
-        Serial.print(pin);
-        Serial.println(" no válido. Usa 0-15.");
-        #endif
-        return;
-    }
-    
+void BioLogic::pinMode(uint8_t pin, uint8_t mode) {    
     _sendCommand(0x01, pin, mode);
-    
-    #ifdef BIOLOGIC_DEBUG
-    Serial.print("BioLogic: pinMode(");
-    Serial.print(pin);
-    Serial.print(", ");
-    Serial.print(mode);
-    Serial.println(")");
-    #endif
 }
 
 void BioLogic::digitalWrite(uint8_t pin, uint8_t value) {
-    if (pin > 15) {
-        #ifdef BIOLOGIC_DEBUG
-        Serial.print("BioLogic ERROR: Pin ");
-        Serial.print(pin);
-        Serial.println(" no válido. Usa 0-15.");
-        #endif
-        return;
-    }
-    
+   
     _sendCommand(0x02, pin, value);
-    
-    #ifdef BIOLOGIC_DEBUG
-    Serial.print("BioLogic: digitalWrite(");
-    Serial.print(pin);
-    Serial.print(", ");
-    Serial.print(value ? "HIGH" : "LOW");
-    Serial.println(")");
-    #endif
+
 }
 
 void BioLogic::analogWrite(uint8_t pin, uint8_t value) {
     
     _sendCommand(0x03, pin, value);
     
-    #ifdef BIOLOGIC_DEBUG
-    Serial.print("BioLogic: analogWrite(");
-    Serial.print(pin);
-    Serial.print(", ");
-    Serial.print(value);
-    Serial.print(") [");
-    Serial.print(map(value, 0, 255, 0, 100));
-    Serial.println("%]");
-    #endif
 }
 
 uint8_t BioLogic::digitalRead(uint8_t pin) {    
     _sendCommand(0x04, pin);
-    delayMicroseconds(1000); // 1ms para procesamiento
+    delayMicroseconds(1000);
     
     Wire.requestFrom(_address, (uint8_t)1);
     uint8_t value = _readResponse(1);
@@ -214,11 +171,9 @@ void BioLogic::relayToggle(uint8_t relayNum) {
 void BioLogic::relayTimed(uint8_t relayNum, uint32_t durationMs) {
     if (relayNum <= r4) {
         relayOn(relayNum);
-        
-        // Enviar pings periódicos mientras el relé está activo
         uint32_t startTime = millis();
         while (millis() - startTime < durationMs) {
-            delay(1000); // Esperar 1 segundo
+        delay(1000);
             }
         }
         
@@ -230,19 +185,15 @@ void BioLogic::pwmPercent(uint8_t pwmNum, uint8_t percent) {
         //_sendCommand(0x03, pwmNum, percent);
         if (pwmNum >= q1 && pwmNum <= q4) {
         if (percent > 100) percent = 100;
-        
         uint8_t value = map(percent, 0, 100, 0, 255);
         analogWrite(pwmNum, value);
     }
 }
 
 float BioLogic::readVoltage(uint8_t inputNum) {
-    if (inputNum >= in1 && inputNum <= in8) {
         uint16_t adcValue = analogRead(inputNum);
         float voltage = (adcValue * 3.3) / 4095.0;
-        
         return voltage;
-    }
 }
 
 
@@ -252,14 +203,6 @@ void BioLogic::setAddress(uint8_t newAddress) {
 
 uint8_t BioLogic::getAddress() {
     return _address;
-}
-
-String BioLogic::getVersion() {
-    return String(BIOLOGIC_VERSION);
-}
-
-String BioLogic::getAuthor() {
-    return String(BIOLOGIC_AUTHOR);
 }
 
 void BioLogic::setTimeout(uint32_t timeout) {
@@ -275,14 +218,4 @@ void BioLogic::setI2CFrequency(uint32_t frequency) {
     
     Wire.setClock(frequency);
     
-}
-
-void BioLogic::resetBoard() {
-    // Comando especial para reset (si está implementado en el firmware)
-    Wire.beginTransmission(_address);
-    Wire.write(0xFF);  // Comando de reset
-    Wire.write(0xFF);
-    Wire.write(0xFF);
-    Wire.endTransmission();    
-    delay(1000); // Esperar a que la placa se reinicie
 }
