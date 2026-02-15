@@ -149,6 +149,32 @@ uint16_t BioLogic::analogRead(uint8_t pin) {
     return value;
 }
 
+bool BioLogic::readDHT11(uint8_t pin, float &humidity, float &temperature) {
+    if (!_initialized) return false;
+    
+    _sendCommand(0x06, pin, 0);
+    delay(300);
+    
+    Wire.requestFrom(_address, (uint8_t)4);
+    uint32_t startTime = millis();
+    while (Wire.available() < 4 && (millis() - startTime) < _timeout) {
+        delayMicroseconds(100);
+    }
+    if (Wire.available() < 4) return false;
+    
+    uint8_t data[4];
+    for (int i = 0; i < 4; i++) {
+        data[i] = Wire.read();
+    }
+    if (data[0] == 0xFF && data[1] == 0xFF && data[2] == 0xFF && data[3] == 0xFF) {
+        return false;
+    }
+    
+    humidity = data[0] + data[1] / 10.0;
+    temperature = data[2] + data[3] / 10.0;
+    return true;
+}
+
 void BioLogic::relayOn(uint8_t relayNum) {
     if (relayNum <= r4) {
         digitalWrite(relayNum, HIGH);   
@@ -159,7 +185,7 @@ void BioLogic::relayOff(uint8_t relayNum) {
     if (relayNum <= r4) {
         digitalWrite(relayNum, LOW);
     } 
-    }
+}
 
 void BioLogic::relayToggle(uint8_t relayNum) {
     if (relayNum <= r4) {
@@ -173,17 +199,14 @@ void BioLogic::relayTimed(uint8_t relayNum, uint32_t durationMs) {
         relayOn(relayNum);
         uint32_t startTime = millis();
         while (millis() - startTime < durationMs) {
-        delay(1000);
-            }
+            delay(1000);
         }
-        
+    }
     relayOff(relayNum);
 }
 
 void BioLogic::pwmPercent(uint8_t pwmNum, uint8_t percent) {
-        //analogWrite(pwmNum, percent);
-        //_sendCommand(0x03, pwmNum, percent);
-        if (pwmNum >= q1 && pwmNum <= q4) {
+    if (pwmNum >= q1 && pwmNum <= q4) {
         if (percent > 100) percent = 100;
         uint8_t value = map(percent, 0, 100, 0, 255);
         analogWrite(pwmNum, value);
@@ -191,11 +214,10 @@ void BioLogic::pwmPercent(uint8_t pwmNum, uint8_t percent) {
 }
 
 float BioLogic::readVoltage(uint8_t inputNum) {
-        uint16_t adcValue = analogRead(inputNum);
-        float voltage = (adcValue * 3.3) / 4095.0;
-        return voltage;
+    uint16_t adcValue = analogRead(inputNum);
+    float voltage = (adcValue * 3.3) / 4095.0;
+    return voltage;
 }
-
 
 void BioLogic::setAddress(uint8_t newAddress) {
     _address = newAddress;
@@ -207,7 +229,6 @@ uint8_t BioLogic::getAddress() {
 
 void BioLogic::setTimeout(uint32_t timeout) {
     _timeout = timeout;
-    
 }
 
 uint32_t BioLogic::getTimeout() {
@@ -215,7 +236,5 @@ uint32_t BioLogic::getTimeout() {
 }
 
 void BioLogic::setI2CFrequency(uint32_t frequency) {
-    
     Wire.setClock(frequency);
-    
 }
