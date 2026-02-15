@@ -17,13 +17,15 @@ analogWrite	KEYWORD2
 analogRead	KEYWORD2
 
 # Métodos específicos BioLogic (KEYWORD2)
-relayOn	KEYWORD2
+relayOn	    KEYWORD2
 relayOff	KEYWORD2
 pwmPercent	KEYWORD2
 readVoltage	KEYWORD2
 isConnected	KEYWORD2
 setAddress	KEYWORD2
 getAddress	KEYWORD2
+servoWrite  KEYWORD2
+readDHT11   KEYWORD2
 
 # Pines virtuales BioLogic (LITERAL1)
 r1	LITERAL1

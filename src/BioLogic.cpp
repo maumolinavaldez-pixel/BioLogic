@@ -175,6 +175,11 @@ bool BioLogic::readDHT11(uint8_t pin, float &humidity, float &temperature) {
     return true;
 }
 
+void BioLogic::servoWrite(uint8_t pin, uint8_t angle) {
+    if (angle > 180) angle = 180;
+    _sendCommand(CMD_SERVO_WRITE, pin, angle);
+}
+
 void BioLogic::relayOn(uint8_t relayNum) {
     if (relayNum <= r4) {
         digitalWrite(relayNum, HIGH);   
