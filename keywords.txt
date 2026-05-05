@@ -1,13 +1,13 @@
 ﻿######################################################
 # BioLogic Library - Keywords                        #
 # Diseñada por @teoriademau para la placa BioLogic   #
-# Versión 2.2.0                                      #
+# Versión 1.2.0                                      #
 ######################################################
 
 # Clase principal (KEYWORD1)
 BioLogic	KEYWORD1
 
-# Métodos de inicialización (KEYWORD2)
+# Metodos de inicialización (KEYWORD2)
 begin	KEYWORD2
 
 # Métodos Arduino compatibles (KEYWORD2)

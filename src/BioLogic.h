@@ -64,7 +64,8 @@ private:
     uint8_t _rst;
     void _sendCommand(uint8_t cmd, uint8_t pin, uint8_t value = 0);
     void _sendCommand3(uint8_t cmd, uint8_t a, uint8_t b, uint8_t c);
-    uint8_t _readResponse(uint8_t bytes = 1);
+    uint8_t _readResponse(uint8_t bytes);
+    uint16_t _readResponse16();
 
 public:
     BioLogic();
