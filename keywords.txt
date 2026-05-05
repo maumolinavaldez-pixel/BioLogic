@@ -1,7 +1,8 @@
-﻿#######################################
-# BioLogic Library - Keywords
-# Diseñada por @teoriademau para la placa BioLogic
-#######################################
+﻿######################################################
+# BioLogic Library - Keywords                        #
+# Diseñada por @teoriademau para la placa BioLogic   #
+# Versión 2.2.0                                      #
+######################################################
 
 # Clase principal (KEYWORD1)
 BioLogic	KEYWORD1
@@ -17,15 +18,25 @@ analogWrite	KEYWORD2
 analogRead	KEYWORD2
 
 # Métodos específicos BioLogic (KEYWORD2)
-relayOn	    KEYWORD2
+relayOn	KEYWORD2
 relayOff	KEYWORD2
+relayToggle	KEYWORD2
+relayTimed	KEYWORD2
 pwmPercent	KEYWORD2
 readVoltage	KEYWORD2
 isConnected	KEYWORD2
 setAddress	KEYWORD2
 getAddress	KEYWORD2
-servoWrite  KEYWORD2
-readDHT11   KEYWORD2
+servoWrite	KEYWORD2
+readDHT11	KEYWORD2
+rtcSetTime	KEYWORD2
+rtcGetTime	KEYWORD2
+hBridgeConfig	KEYWORD2
+hBridgeControl	KEYWORD2
+hBridgeStop	KEYWORD2
+hBridgeForward	KEYWORD2
+hBridgeReverse	KEYWORD2
+hBridgeBrake	KEYWORD2
 
 # Pines virtuales BioLogic (LITERAL1)
 r1	LITERAL1
@@ -44,6 +55,15 @@ in5	LITERAL1
 in6	LITERAL1
 in7	LITERAL1
 in8	LITERAL1
+in9	LITERAL1
+in10	LITERAL1
+
+# Constantes del puente H (LITERAL1)
+HBRIDGE_STOP	LITERAL1
+HBRIDGE_FORWARD	LITERAL1
+HBRIDGE_REVERSE	LITERAL1
+HBRIDGE_BRAKE	LITERAL1
+HBRIDGE_NO_PWM	LITERAL1
 
 # Modos de pines (LITERAL1)
 INPUT	LITERAL1
